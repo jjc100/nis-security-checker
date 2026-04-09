@@ -9,12 +9,13 @@ target:
     ssh: 22
 
   # Windows 프로젝트 대상 (graybox 검사용) - 선택 사항
-  # project_path: "D:\\Develop2\\NVR4"
-  # solution_path: "D:\\Develop2\\NVR4\\NVR4.sln"       # 선택
-  # build_output_path: "D:\\Develop2\\NVR4\\bin"         # 선택
-  # source_paths:                                         # 선택, 미지정 시 project_path 전체 탐색
-  #   - "D:\\Develop2\\NVR4\\src"
-  #   - "D:\\Develop2\\NVR4\\lib"
+  # 아래 경로를 실제 프로젝트 위치로 변경하세요.
+  # project_path: "D:\\path\\to\\your\\project"
+  # solution_path: "D:\\path\\to\\your\\project\\YourProject.sln"     # 선택
+  # build_output_path: "D:\\path\\to\\your\\project\\bin"             # 선택
+  # source_paths:                                                       # 선택, 미지정 시 project_path 전체 탐색
+  #   - "D:\\path\\to\\your\\project\\src"
+  #   - "D:\\path\\to\\your\\project\\lib"
   # scan_build_outputs: true                              # bin/obj 산출물 포함 여부 (기본: true)
 
 # 계정 정보

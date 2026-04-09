@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 from src.models import TestResult, TestStatus
+from src.utils.path_validator import is_within_root, DEFAULT_EXCLUDE_DIRS, DEFAULT_MAX_DEPTH
 
 # 평문 인증정보 패턴 (Linux 메모리에서 탐지)
 CREDENTIAL_PATTERNS = [
@@ -49,7 +50,7 @@ CPP_MEMORY_ISSUE_PATTERNS = [
 SOURCE_EXTENSIONS = {".cs", ".cpp", ".h", ".c", ".hpp"}
 
 # 제외 디렉터리
-EXCLUDED_DIRS = {".git", "node_modules", ".vs", ".idea"}
+EXCLUDED_DIRS = DEFAULT_EXCLUDE_DIRS
 
 
 def _is_excluded(path: Path) -> bool:
@@ -161,6 +162,7 @@ class MemoryAnalyzer:
         for root in self._project_roots:
             if not root.exists():
                 continue
+            resolved_root = root.resolve()
             for fpath in root.rglob("*"):
                 if _is_excluded(fpath):
                     continue
@@ -168,7 +170,17 @@ class MemoryAnalyzer:
                     continue
                 if fpath.suffix.lower() not in SOURCE_EXTENSIONS:
                     continue
+                # 스캔 깊이 제한
+                try:
+                    depth = len(fpath.relative_to(root).parts)
+                    if depth > DEFAULT_MAX_DEPTH:
+                        continue
+                except ValueError:
+                    continue
                 resolved = fpath.resolve()
+                # 루트 바깥 경로(심볼릭 링크 우회 등) 방지
+                if not is_within_root(resolved, resolved_root):
+                    continue
                 if resolved in seen:
                     continue
                 seen.add(resolved)

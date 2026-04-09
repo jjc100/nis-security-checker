@@ -56,12 +56,12 @@ python -m src.main --config config/target_config.yaml --mode all
 
 ```yaml
 target:
-  project_path: "D:\\Develop2\\NVR4"
-  solution_path: "D:\\Develop2\\NVR4\\NVR4.sln"
-  build_output_path: "D:\\Develop2\\NVR4\\bin"
+  project_path: "D:\\path\\to\\your\\project"
+  solution_path: "D:\\path\\to\\your\\project\\YourProject.sln"
+  build_output_path: "D:\\path\\to\\your\\project\\bin"
   source_paths:
-    - "D:\\Develop2\\NVR4\\src"
-    - "D:\\Develop2\\NVR4\\lib"
+    - "D:\\path\\to\\your\\project\\src"
+    - "D:\\path\\to\\your\\project\\lib"
   scan_build_outputs: true
 ```
 
@@ -279,29 +279,29 @@ target:
     http: 80
     ssh: 22
   # Windows 프로젝트 경로 (선택 사항)
-  # project_path: "D:\\Develop2\\NVR4"
+  # project_path: "D:\\path\\to\\your\\project"
 ```
 
 ### Windows 프로젝트 대상 (`config/target_config_nvr4.yaml`)
 
 ```yaml
 target:
-  project_path: "D:\\Develop2\\NVR4"
-  solution_path: "D:\\Develop2\\NVR4\\NVR4.sln"
-  build_output_path: "D:\\Develop2\\NVR4\\bin"
+  project_path: "D:\\path\\to\\your\\project"
+  solution_path: "D:\\path\\to\\your\\project\\YourProject.sln"
+  build_output_path: "D:\\path\\to\\your\\project\\bin"
   source_paths:
-    - "D:\\Develop2\\NVR4\\src"
-    - "D:\\Develop2\\NVR4\\lib"
+    - "D:\\path\\to\\your\\project\\src"
+    - "D:\\path\\to\\your\\project\\lib"
   scan_build_outputs: true
 
 # NuGet CVE 자동 조회를 위한 NVD API 키 (선택)
 nvd:
   api_key: ""
-  product_name: "nvr4"
+  product_name: "your_product"
 
 # 무결성 검사 기준 해시 (선택)
 integrity_baseline:
-  "D:\\Develop2\\NVR4\\bin\\NVR4.exe": ""
+  "D:\\path\\to\\your\\project\\bin\\YourProject.exe": ""
 ```
 
 ## 테스트
