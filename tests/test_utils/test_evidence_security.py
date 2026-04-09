@@ -68,6 +68,8 @@ class TestEvidenceManagerSecurity:
         assert str(result_path).startswith(str(evidence_dir.resolve()))
         # 파일명에 슬래시가 없어야 함
         assert "/" not in result_path.name
+        # 슬래시가 언더스코어로 치환된 item_id 부분이 파일명에 있어야 함
+        assert "AUTH_001" in result_path.name
 
     def test_registry_recorded_after_attach(self, tmp_path):
         """attach 성공 후 레지스트리에 항목이 기록되어야 한다."""

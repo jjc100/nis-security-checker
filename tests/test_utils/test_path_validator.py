@@ -218,6 +218,8 @@ class TestSanitizeFilename:
         assert "\\" not in result
         # 결과는 단일 파일명 문자열이어야 함 (비어 있지 않아야 함)
         assert len(result) > 0
+        # 슬래시가 언더스코어로 치환되어 단일 파일명이 됨
+        assert result == "_.._.._etc_passwd"
 
     def test_leading_dot_removed(self):
         """앞에 오는 점은 제거되어야 한다."""
