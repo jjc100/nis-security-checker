@@ -639,6 +639,17 @@ class TestMemoryAnalyzerWindows:
         assert result.id == "MEM-001"
         assert result.engine == "graybox"
 
+    def test_no_project_path_on_windows_returns_skip_not_attribute_error(self):
+        """project_path 없이 Windows 플랫폼에서 실행해도 AttributeError가 발생하지 않아야 한다."""
+        # project_path/source_paths가 없는 설정 (Windows 플랫폼에서 project_path 없이 실행하는 케이스)
+        empty_config = {"target": {}, "features": {}}
+        analyzer = MemoryAnalyzer(empty_config)
+        # 수정 전에는 Windows에서 os.geteuid()가 없어 AttributeError가 발생했음.
+        # 수정 후에는 Windows이면 SKIP, Linux이면 root 권한 없음으로 인한 SKIP이 반환되어야 한다.
+        result = analyzer.check_plaintext_credentials_in_memory()
+        assert result.id == "MEM-001"
+        assert result.status in (TestStatus.SKIP, TestStatus.PASS)
+
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Runner 설정 검증 테스트

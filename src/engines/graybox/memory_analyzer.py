@@ -7,6 +7,7 @@ Linux 모드: 프로세스 메모리 덤프 후 평문 인증정보를 검색합
 import os
 import re
 import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -249,6 +250,21 @@ class MemoryAnalyzer:
                 details=(
                     "분석할 소스 파일을 찾을 수 없습니다. "
                     "config의 project_path 또는 source_paths를 확인하세요."
+                ),
+                timestamp=datetime.now(),
+            )
+
+        # Linux 모드: Windows 환경에서는 /proc 기반 메모리 분석 불가 → SKIP
+        if sys.platform == "win32":
+            return TestResult(
+                id="MEM-001",
+                name="메모리 내 평문 인증정보 미존재",
+                category="메모리보안",
+                status=TestStatus.SKIP,
+                engine=self.engine,
+                details=(
+                    "Windows 환경에서는 런타임 메모리 분석이 지원되지 않습니다. "
+                    "소스 코드 분석을 위해 config에 project_path를 설정하세요."
                 ),
                 timestamp=datetime.now(),
             )
