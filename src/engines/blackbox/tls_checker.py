@@ -91,9 +91,10 @@ class TLSChecker:
 
         # Python 3.10+ 에서는 TLS 1.0/1.1을 라이브러리 수준에서 제한할 수 있음
         # 실제로는 서버가 거부하는지 여부를 확인
+        # 보안 취약점 검사를 위해 의도적으로 TLS 1.0을 설정합니다 (서버가 거부하는지 확인 목적)
         try:
-            ctx.minimum_version = ssl.TLSVersion.TLSv1
-            ctx.maximum_version = ssl.TLSVersion.TLSv1
+            ctx.minimum_version = ssl.TLSVersion.TLSv1  # noqa: S502 — 취약 버전 거부 검사 목적
+            ctx.maximum_version = ssl.TLSVersion.TLSv1  # noqa: S502 — 취약 버전 거부 검사 목적
         except (AttributeError, ssl.SSLError):
             # TLS 1.0 설정 자체가 불가능한 경우 PASS 처리
             return TestResult(

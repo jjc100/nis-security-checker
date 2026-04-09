@@ -33,18 +33,15 @@ def tcp_connect(host: str, port: int, timeout: float = 5.0) -> bool:
         return False
 
 
-def get_ssl_context(min_version: ssl.TLSVersion = ssl.TLSVersion.TLSv1_2) -> ssl.SSLContext:
+def get_ssl_context() -> ssl.SSLContext:
     """
-    SSL 컨텍스트를 생성하여 반환합니다.
-
-    Args:
-        min_version: 최소 TLS 버전
+    TLS 1.2 이상으로 제한된 SSL 컨텍스트를 생성하여 반환합니다.
 
     Returns:
-        설정된 SSLContext
+        설정된 SSLContext (최소 TLS 1.2)
     """
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-    ctx.minimum_version = min_version
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
     return ctx
