@@ -1,11 +1,21 @@
 # 테스트 대상 시스템 설정
 target:
+  # 네트워크 대상 (blackbox 검사용)
   host: 192.168.1.100
   ports:
     https: 443
     rtsp: 554
     http: 80
     ssh: 22
+
+  # Windows 프로젝트 대상 (graybox 검사용) - 선택 사항
+  # project_path: "D:\\Develop2\\NVR4"
+  # solution_path: "D:\\Develop2\\NVR4\\NVR4.sln"       # 선택
+  # build_output_path: "D:\\Develop2\\NVR4\\bin"         # 선택
+  # source_paths:                                         # 선택, 미지정 시 project_path 전체 탐색
+  #   - "D:\\Develop2\\NVR4\\src"
+  #   - "D:\\Develop2\\NVR4\\lib"
+  # scan_build_outputs: true                              # bin/obj 산출물 포함 여부 (기본: true)
 
 # 계정 정보
 credentials:

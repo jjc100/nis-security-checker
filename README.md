@@ -4,8 +4,8 @@
 
 ## 검증 방식
 
-- **블랙박스 (BlackBox)**: 네트워크/API 기반 외부 검사
-- **그레이박스 (GrayBox)**: 파일시스템/바이너리 직접 분석
+- **블랙박스 (BlackBox)**: 네트워크/API 기반 외부 검사 (실 장비 대상)
+- **그레이박스 (GrayBox)**: 파일시스템/소스코드/바이너리 직접 분석 (Linux 장비 또는 Windows 프로젝트 소스 모두 지원)
 - **체크리스트 (Checklist)**: 검사자 수동 확인 및 기록
 
 ## 상태
@@ -20,11 +20,13 @@ pip install -r requirements.txt
 
 ## 사용법
 
+### 기존 장비 대상 검사 (네트워크/Linux 기반)
+
 ```bash
 # 전체 검사 실행 (블랙박스 + 그레이박스 + 체크리스트)
 python -m src.main --config config/target_config.yaml --mode all
 
-# 블랙박스 검사만 실행
+# 블랙박스 검사만 실행 (host 필수)
 python -m src.main --config config/target_config.yaml --mode blackbox
 
 # 그레이박스 검사만 실행
@@ -40,32 +42,82 @@ python -m src.main --config config/target_config.yaml --format json --output out
 python -m src.main --config config/target_config.yaml --format html --output output/report.html
 ```
 
+### Windows 프로젝트 대상 검사 (NVR4 등 소스 프로젝트)
+
+```bash
+# Windows 프로젝트 대상 그레이박스 검사
+python -m src.main --config config/target_config_nvr4.yaml --mode graybox
+
+# 네트워크 장비 + 프로젝트 소스 통합 검사 (host + project_path 모두 설정 시)
+python -m src.main --config config/target_config.yaml --mode all
+```
+
+`config/target_config_nvr4.yaml` 예시:
+
+```yaml
+target:
+  project_path: "D:\\Develop2\\NVR4"
+  solution_path: "D:\\Develop2\\NVR4\\NVR4.sln"
+  build_output_path: "D:\\Develop2\\NVR4\\bin"
+  source_paths:
+    - "D:\\Develop2\\NVR4\\src"
+    - "D:\\Develop2\\NVR4\\lib"
+  scan_build_outputs: true
+```
+
+## 엔진 자동 선택 규칙
+
+| 설정 | blackbox | graybox | checklist |
+|------|----------|---------|-----------|
+| host만 있음 | ✅ 실행 | ✅ 실행 (Linux 폴백) | ✅ 실행 |
+| project_path만 있음 | ⛔ 건너뜀 | ✅ 실행 (소스 분석) | ✅ 실행 |
+| host + project_path | ✅ 실행 | ✅ 실행 (소스 분석) | ✅ 실행 |
+
+- `--mode blackbox`를 명시하면 `host`가 필수입니다.
+- `--mode all`은 설정에 따라 실행 가능한 엔진만 자동 선택합니다.
+
 ## 아키텍처
 
 ```
 nis-security-checker/
 ├── config/
-│   ├── target_config.yaml       # 대상 호스트/포트/계정 설정
-│   ├── checklist_items.yaml     # 55개 검사 항목 정의
-│   └── requirements_map.yaml    # 항목↔요구사항 매핑
+│   ├── target_config.yaml          # 네트워크 장비 대상 설정
+│   ├── target_config_nvr4.yaml     # Windows/NVR4 프로젝트 대상 설정
+│   ├── checklist_items.yaml        # 55개 검사 항목 정의
+│   └── requirements_map.yaml       # 항목↔요구사항 매핑
 ├── src/
-│   ├── main.py                  # CLI 진입점 (argparse)
-│   ├── runner.py                # 검사 오케스트레이터
-│   ├── models.py                # 공통 데이터 모델 (TestResult, TestStatus)
+│   ├── main.py                     # CLI 진입점 (argparse)
+│   ├── runner.py                   # 검사 오케스트레이터 (엔진 자동 선택)
+│   ├── models.py                   # 공통 데이터 모델 (TestResult, TestStatus)
 │   ├── engines/
-│   │   ├── blackbox/            # 외부 네트워크 검사 엔진 (8개 모듈)
-│   │   ├── graybox/             # 파일시스템/바이너리 분석 엔진 (9개 모듈)
-│   │   └── checklist/           # 대화형 체크리스트 엔진 (3개 모듈)
+│   │   ├── blackbox/               # 외부 네트워크 검사 엔진 (8개 모듈)
+│   │   ├── graybox/                # 파일시스템/소스코드 분석 엔진 (9개 모듈)
+│   │   │   ├── filesystem_analyzer.py   # 설정 기반 경로 탐색 (Linux/Windows 공용)
+│   │   │   ├── crypto_analyzer.py       # 금지 암호 알고리즘 탐지 (.NET/C++/바이너리)
+│   │   │   ├── hardcoded_key_scanner.py # 하드코딩 키/패스워드 탐지
+│   │   │   ├── hash_analyzer.py         # 약한 해시 패턴 탐지 (소스코드/DB)
+│   │   │   ├── log_analyzer.py          # 로깅 구문 민감정보 탐지
+│   │   │   ├── integrity_checker.py     # 빌드 산출물 무결성 검증
+│   │   │   ├── cve_scanner.py           # NVD CVE 조회 + NuGet 패키지 분석
+│   │   │   ├── memory_analyzer.py       # 메모리 보안 이슈 탐지 (소스/프로세스)
+│   │   │   └── iframe_checker.py        # 영상 I-frame 암호화 확인
+│   │   └── checklist/              # 대화형 체크리스트 엔진 (3개 모듈)
 │   ├── report/
-│   │   ├── generator.py         # 결과 집계 및 리포트 생성
-│   │   ├── formatters.py        # JSON/HTML 저장
+│   │   ├── generator.py            # 결과 집계 및 리포트 생성
+│   │   ├── formatters.py           # JSON/HTML 저장
 │   │   └── templates/report.html
 │   └── utils/
-│       ├── network.py           # 네트워크 유틸리티
-│       ├── crypto.py            # 암호화 유틸리티
-│       └── logger.py            # 로깅 설정
-├── tests/                       # pytest 기반 단위 테스트 (48개)
-└── docs/                        # 사용 가이드 및 요구사항 매핑 문서
+│       ├── network.py              # 네트워크 유틸리티
+│       ├── crypto.py               # 암호화 유틸리티
+│       └── logger.py               # 로깅 설정
+├── tests/                          # pytest 기반 단위 테스트 (100개)
+│   ├── test_blackbox/
+│   ├── test_graybox/
+│   │   ├── test_crypto_analyzer.py
+│   │   ├── test_hash_analyzer.py
+│   │   └── test_windows_support.py  # Windows/NVR4 지원 테스트
+│   └── test_report/
+└── docs/                           # 사용 가이드 및 요구사항 매핑 문서
 ```
 
 ### 검사 흐름
@@ -73,11 +125,24 @@ nis-security-checker/
 ```
 main.py (CLI)
   └─► runner.py (Runner)
-        ├─► engines/blackbox/*   → TestResult[]
-        ├─► engines/graybox/*    → TestResult[]
+        ├─► 설정 검증 (host/project_path 유무 확인)
+        ├─► engines/blackbox/*   → TestResult[] (host가 있을 때만)
+        ├─► engines/graybox/*    → TestResult[] (항상 실행, 소스/바이너리 분석)
         ├─► engines/checklist/*  → TestResult[]
         └─► report/generator.py → JSON / HTML 리포트
 ```
+
+## graybox 지원 대상
+
+| 분석 대상 | 지원 내용 |
+|----------|---------|
+| `.cs` | .NET 금지 알고리즘, 약한 해시, 하드코딩 키, 민감정보 로깅, 메모리 이슈 |
+| `.cpp`, `.h`, `.c`, `.hpp` | C++ OpenSSL 금지 알고리즘, 메모리 보안 패턴 |
+| `.config`, `.xml` | connectionString/appSettings 내 평문 값, XML 속성 패스워드 |
+| `.json`, `.ini`, `.yaml` | 평문 패스워드, 하드코딩 시크릿 |
+| `.csproj`, `packages.config` | NuGet 패키지 추출 → NVD CVE 조회 |
+| `.dll`, `.exe`, `.lib` | Python 순수 문자열 추출 → 금지 알고리즘/하드코딩 키 탐지 |
+| 로그 파일 | 민감정보 포함 여부, 필수 이벤트/필드 검사 |
 
 ## 검사 항목 (55개)
 
@@ -203,21 +268,40 @@ main.py (CLI)
 
 ## 설정
 
-`config/target_config.yaml` 파일에서 대상 호스트, 포트, 계정 정보, 기능 플래그를 설정합니다.
+### 네트워크 장비 대상 (`config/target_config.yaml`)
 
 ```yaml
 target:
   host: "192.168.1.100"
-  https_port: 443
-  rtsp_port: 554
-  ssh_port: 22
-  username: "admin"
-  password: "password"
+  ports:
+    https: 443
+    rtsp: 554
+    http: 80
+    ssh: 22
+  # Windows 프로젝트 경로 (선택 사항)
+  # project_path: "D:\\Develop2\\NVR4"
+```
 
-features:
-  rtsp_enabled: true
-  onvif_enabled: true
-  ssh_enabled: true
+### Windows 프로젝트 대상 (`config/target_config_nvr4.yaml`)
+
+```yaml
+target:
+  project_path: "D:\\Develop2\\NVR4"
+  solution_path: "D:\\Develop2\\NVR4\\NVR4.sln"
+  build_output_path: "D:\\Develop2\\NVR4\\bin"
+  source_paths:
+    - "D:\\Develop2\\NVR4\\src"
+    - "D:\\Develop2\\NVR4\\lib"
+  scan_build_outputs: true
+
+# NuGet CVE 자동 조회를 위한 NVD API 키 (선택)
+nvd:
+  api_key: ""
+  product_name: "nvr4"
+
+# 무결성 검사 기준 해시 (선택)
+integrity_baseline:
+  "D:\\Develop2\\NVR4\\bin\\NVR4.exe": ""
 ```
 
 ## 테스트
@@ -225,3 +309,4 @@ features:
 ```bash
 python -m pytest tests/ -v
 ```
+
