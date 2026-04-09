@@ -1,0 +1,62 @@
+# 테스트 대상 시스템 설정
+target:
+  host: 192.168.1.100
+  ports:
+    https: 443
+    rtsp: 554
+    http: 80
+    ssh: 22
+
+# 계정 정보
+credentials:
+  admin:
+    username: admin
+    password: "Admin@1234"
+  viewer:
+    username: viewer
+    password: "Viewer@1234"
+
+# 기능 플래그
+features:
+  has_audio: true           # 오디오 기능 지원 여부
+  has_2fa: false            # 2단계 인증 지원 여부
+  has_rtsp: true            # RTSP 스트리밍 지원 여부
+  has_onvif: true           # ONVIF 프로토콜 지원 여부
+  has_ssh: true             # SSH 접속 지원 여부
+  has_web_interface: true   # 웹 인터페이스 지원 여부
+  has_rest_api: true        # REST API 지원 여부
+
+# 타임아웃 설정 (초)
+timeouts:
+  connect: 10
+  session: 600              # 세션 타임아웃 10분
+  login_lockout: 300        # 로그인 잠금 5분
+
+# 최대 로그인 실패 횟수
+max_login_attempts: 5
+
+# CVE 조회 설정
+nvd:
+  api_key: ""               # NVD API 키 (선택 사항)
+  product_name: "ip_camera"
+  vendor: "example"
+
+# 기본 계정 목록 (취약 여부 확인용)
+default_credentials:
+  - username: admin
+    password: admin
+  - username: admin
+    password: "123456"
+  - username: admin
+    password: password
+  - username: root
+    password: root
+  - username: root
+    password: ""
+  - username: admin
+    password: ""
+
+# 무결성 검사 기준 해시 (파일경로: SHA-256)
+integrity_baseline:
+  "/etc/hosts": ""
+  "/etc/passwd": ""
