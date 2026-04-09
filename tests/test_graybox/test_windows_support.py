@@ -673,7 +673,7 @@ class TestRunnerConfigValidation:
 
     def test_all_mode_no_host_skips_blackbox(self):
         """all 모드에서 host가 없으면 blackbox를 건너뛰어야 한다."""
-        from src.runner import Runner, _has_host
+        from src.runner import Runner
         runner = Runner(
             config_path="dummy.yaml",
             checklist_path="dummy_checklist.yaml",
