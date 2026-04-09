@@ -1,0 +1,593 @@
+# NIS 영상보안 요구사항 매핑 테이블
+# 각 검사 항목과 NIS 영상보안 인증 기준 간의 매핑을 정의합니다.
+
+mappings:
+  # ── 인증 (Authentication) ──────────────────────────────
+  - id: "AUTH-001"
+    title: "기본 계정 변경 강제"
+    category: "인증"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.1.1"
+    module: "default_cred_checker.py"
+    severity: "high"
+    automated: true
+
+  - id: "AUTH-002"
+    title: "유추 가능 계정명 금지"
+    category: "인증"
+    method: "checklist"
+    reference: "NIS 영상보안 2.1.2"
+    module: "interactive.py"
+    severity: "medium"
+    automated: false
+
+  - id: "AUTH-003"
+    title: "로그인 5회 실패 시 잠금"
+    category: "인증"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.1.3"
+    module: "login_tester.py"
+    severity: "high"
+    automated: true
+
+  - id: "AUTH-004"
+    title: "잠금 해제 대기시간 5분 이상"
+    category: "인증"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.1.4"
+    module: "login_tester.py"
+    severity: "medium"
+    automated: true
+
+  - id: "AUTH-005"
+    title: "동일 오류 메시지 반환"
+    category: "인증"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.1.5"
+    module: "login_tester.py"
+    severity: "medium"
+    automated: true
+
+  - id: "AUTH-006"
+    title: "2단계 인증 지원 (해당 시)"
+    category: "인증"
+    method: "checklist"
+    reference: "NIS 영상보안 2.1.6"
+    module: "interactive.py"
+    severity: "high"
+    automated: false
+    condition: "has_2fa"
+
+  - id: "AUTH-007"
+    title: "ONVIF 인증 필수 적용"
+    category: "인증"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.1.7"
+    module: "protocol_auth.py"
+    severity: "critical"
+    automated: true
+    condition: "has_onvif"
+
+  - id: "AUTH-008"
+    title: "RTSP 인증 필수 적용"
+    category: "인증"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.1.8"
+    module: "protocol_auth.py"
+    severity: "critical"
+    automated: true
+    condition: "has_rtsp"
+
+  # ── 접근 제어 (Access Control) ────────────────────────
+  - id: "AC-001"
+    title: "권한 분리 (관리자/사용자)"
+    category: "접근제어"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.2.1"
+    module: "api_auth_tester.py"
+    severity: "high"
+    automated: true
+
+  - id: "AC-002"
+    title: "인증 없는 API 접근 차단"
+    category: "접근제어"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.2.2"
+    module: "api_auth_tester.py"
+    severity: "critical"
+    automated: true
+
+  - id: "AC-003"
+    title: "세션 타임아웃 10분"
+    category: "접근제어"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.2.3"
+    module: "session_tester.py"
+    severity: "medium"
+    automated: true
+
+  - id: "AC-004"
+    title: "중복 세션 차단"
+    category: "접근제어"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.2.4"
+    module: "session_tester.py"
+    severity: "medium"
+    automated: true
+
+  - id: "AC-005"
+    title: "세션 토큰 고유성"
+    category: "접근제어"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.2.5"
+    module: "session_tester.py"
+    severity: "high"
+    automated: true
+
+  - id: "AC-006"
+    title: "불필요 서비스 포트 차단"
+    category: "접근제어"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.2.6"
+    module: "port_scanner.py"
+    severity: "medium"
+    automated: true
+
+  # ── 암호화 (Cryptography) ─────────────────────────────
+  - id: "CRYPT-001"
+    title: "TLS 1.2 이상 사용"
+    category: "암호화"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.3.1"
+    module: "tls_checker.py"
+    severity: "critical"
+    automated: true
+
+  - id: "CRYPT-002"
+    title: "취약 TLS 버전 거부 (SSL3/TLS1.0/1.1)"
+    category: "암호화"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.3.2"
+    module: "tls_checker.py"
+    severity: "critical"
+    automated: true
+
+  - id: "CRYPT-003"
+    title: "강력한 암호 스위트 사용"
+    category: "암호화"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.3.3"
+    module: "tls_checker.py"
+    severity: "high"
+    automated: true
+
+  - id: "CRYPT-004"
+    title: "금지 암호 알고리즘 미사용 (DES/RC4/MD5)"
+    category: "암호화"
+    method: "graybox"
+    reference: "NIS 영상보안 2.3.4"
+    module: "crypto_analyzer.py"
+    severity: "critical"
+    automated: true
+
+  - id: "CRYPT-005"
+    title: "패스워드 단방향 해시 저장 (bcrypt/PBKDF2 등)"
+    category: "암호화"
+    method: "graybox"
+    reference: "NIS 영상보안 2.3.5"
+    module: "hash_analyzer.py"
+    severity: "critical"
+    automated: true
+
+  - id: "CRYPT-006"
+    title: "솔트(Salt) 적용"
+    category: "암호화"
+    method: "graybox"
+    reference: "NIS 영상보안 2.3.6"
+    module: "hash_analyzer.py"
+    severity: "high"
+    automated: true
+
+  - id: "CRYPT-007"
+    title: "PBKDF2 반복횟수 10,000회 이상"
+    category: "암호화"
+    method: "graybox"
+    reference: "NIS 영상보안 2.3.7"
+    module: "hash_analyzer.py"
+    severity: "high"
+    automated: true
+
+  - id: "CRYPT-008"
+    title: "하드코딩 암호키 미존재"
+    category: "암호화"
+    method: "graybox"
+    reference: "NIS 영상보안 2.3.8"
+    module: "hardcoded_key_scanner.py"
+    severity: "critical"
+    automated: true
+
+  # ── 영상 보안 (Video Security) ────────────────────────
+  - id: "VIDEO-001"
+    title: "영상 I-frame 암호화"
+    category: "영상보안"
+    method: "graybox"
+    reference: "NIS 영상보안 2.4.1"
+    module: "iframe_checker.py"
+    severity: "high"
+    automated: true
+
+  - id: "VIDEO-002"
+    title: "영상 전송 암호화"
+    category: "영상보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.4.2"
+    module: "interactive.py"
+    severity: "high"
+    automated: false
+
+  - id: "VIDEO-003"
+    title: "영상 무결성 검증"
+    category: "영상보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.4.3"
+    module: "interactive.py"
+    severity: "medium"
+    automated: false
+
+  - id: "VIDEO-004"
+    title: "오디오 암호화 (해당 시)"
+    category: "영상보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.4.4"
+    module: "interactive.py"
+    severity: "medium"
+    automated: false
+    condition: "has_audio"
+
+  # ── SSH 보안 ──────────────────────────────────────────
+  - id: "SSH-001"
+    title: "SSH 프로토콜 버전 2 사용"
+    category: "SSH보안"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.5.1"
+    module: "ssh_checker.py"
+    severity: "critical"
+    automated: true
+    condition: "has_ssh"
+
+  - id: "SSH-002"
+    title: "SSH 루트 로그인 비활성화"
+    category: "SSH보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.5.2"
+    module: "interactive.py"
+    severity: "high"
+    automated: false
+    condition: "has_ssh"
+
+  - id: "SSH-003"
+    title: "SSH 패스워드 인증 비활성화 (키 기반 인증)"
+    category: "SSH보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.5.3"
+    module: "interactive.py"
+    severity: "high"
+    automated: false
+    condition: "has_ssh"
+
+  # ── 감사 로그 (Audit Logging) ─────────────────────────
+  - id: "LOG-001"
+    title: "로그인 성공/실패 이벤트 기록"
+    category: "감사로그"
+    method: "graybox"
+    reference: "NIS 영상보안 2.6.1"
+    module: "log_analyzer.py"
+    severity: "high"
+    automated: true
+
+  - id: "LOG-002"
+    title: "감사로그 필수 필드 포함"
+    category: "감사로그"
+    method: "graybox"
+    reference: "NIS 영상보안 2.6.2"
+    module: "log_analyzer.py"
+    severity: "medium"
+    automated: true
+
+  - id: "LOG-003"
+    title: "감사로그 내 민감정보 미포함"
+    category: "감사로그"
+    method: "graybox"
+    reference: "NIS 영상보안 2.6.3"
+    module: "log_analyzer.py"
+    severity: "high"
+    automated: true
+
+  - id: "LOG-004"
+    title: "설정 변경 이벤트 기록"
+    category: "감사로그"
+    method: "checklist"
+    reference: "NIS 영상보안 2.6.4"
+    module: "interactive.py"
+    severity: "medium"
+    automated: false
+
+  - id: "LOG-005"
+    title: "감사로그 변조 방지"
+    category: "감사로그"
+    method: "checklist"
+    reference: "NIS 영상보안 2.6.5"
+    module: "interactive.py"
+    severity: "high"
+    automated: false
+
+  # ── 파일 시스템 보안 ──────────────────────────────────
+  - id: "FS-001"
+    title: "설정 파일 접근 권한 제한"
+    category: "파일시스템"
+    method: "graybox"
+    reference: "NIS 영상보안 2.7.1"
+    module: "filesystem_analyzer.py"
+    severity: "high"
+    automated: true
+
+  - id: "FS-002"
+    title: "평문 패스워드 설정 파일 저장 금지"
+    category: "파일시스템"
+    method: "graybox"
+    reference: "NIS 영상보안 2.7.2"
+    module: "filesystem_analyzer.py"
+    severity: "critical"
+    automated: true
+
+  - id: "FS-003"
+    title: "임시 파일 자동 삭제"
+    category: "파일시스템"
+    method: "checklist"
+    reference: "NIS 영상보안 2.7.3"
+    module: "interactive.py"
+    severity: "low"
+    automated: false
+
+  # ── 메모리 보안 ───────────────────────────────────────
+  - id: "MEM-001"
+    title: "메모리 내 평문 인증정보 미존재"
+    category: "메모리보안"
+    method: "graybox"
+    reference: "NIS 영상보안 2.8.1"
+    module: "memory_analyzer.py"
+    severity: "critical"
+    automated: true
+
+  - id: "MEM-002"
+    title: "메모리 보호 기법 적용 (ASLR/DEP)"
+    category: "메모리보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.8.2"
+    module: "interactive.py"
+    severity: "high"
+    automated: false
+
+  # ── 소프트웨어 보안 ───────────────────────────────────
+  - id: "SW-001"
+    title: "알려진 CVE 취약점 미존재"
+    category: "소프트웨어보안"
+    method: "graybox"
+    reference: "NIS 영상보안 2.9.1"
+    module: "cve_scanner.py"
+    severity: "critical"
+    automated: true
+
+  - id: "SW-002"
+    title: "펌웨어/소프트웨어 서명 검증"
+    category: "소프트웨어보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.9.2"
+    module: "interactive.py"
+    severity: "high"
+    automated: false
+
+  - id: "SW-003"
+    title: "파일 무결성 검증"
+    category: "소프트웨어보안"
+    method: "graybox"
+    reference: "NIS 영상보안 2.9.3"
+    module: "integrity_checker.py"
+    severity: "high"
+    automated: true
+
+  - id: "SW-004"
+    title: "안전한 업데이트 채널 (HTTPS)"
+    category: "소프트웨어보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.9.4"
+    module: "interactive.py"
+    severity: "high"
+    automated: false
+
+  # ── 네트워크 보안 ─────────────────────────────────────
+  - id: "NET-001"
+    title: "불필요한 프로토콜 비활성화"
+    category: "네트워크보안"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.10.1"
+    module: "port_scanner.py"
+    severity: "medium"
+    automated: true
+
+  - id: "NET-002"
+    title: "RTSP Digest 인증 강도"
+    category: "네트워크보안"
+    method: "blackbox"
+    reference: "NIS 영상보안 2.10.2"
+    module: "protocol_auth.py"
+    severity: "medium"
+    automated: true
+    condition: "has_rtsp"
+
+  - id: "NET-003"
+    title: "방화벽/ACL 적용"
+    category: "네트워크보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.10.3"
+    module: "interactive.py"
+    severity: "high"
+    automated: false
+
+  # ── 개인정보 보호 ─────────────────────────────────────
+  - id: "PRIV-001"
+    title: "영상 데이터 접근 로그 기록"
+    category: "개인정보보호"
+    method: "checklist"
+    reference: "NIS 영상보안 2.11.1"
+    module: "interactive.py"
+    severity: "medium"
+    automated: false
+
+  - id: "PRIV-002"
+    title: "마스킹/프라이버시 존 지원"
+    category: "개인정보보호"
+    method: "checklist"
+    reference: "NIS 영상보안 2.11.2"
+    module: "interactive.py"
+    severity: "medium"
+    automated: false
+
+  - id: "PRIV-003"
+    title: "영상 데이터 보존 기간 정책"
+    category: "개인정보보호"
+    method: "checklist"
+    reference: "NIS 영상보안 2.11.3"
+    module: "interactive.py"
+    severity: "medium"
+    automated: false
+
+  # ── 물리 보안 ────────────────────────────────────────
+  - id: "PHY-001"
+    title: "물리적 포트 비활성화 (USB/SD)"
+    category: "물리보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.12.1"
+    module: "interactive.py"
+    severity: "medium"
+    automated: false
+
+  - id: "PHY-002"
+    title: "물리적 접근 감사로그"
+    category: "물리보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.12.2"
+    module: "interactive.py"
+    severity: "medium"
+    automated: false
+
+  # ── 운영 보안 ────────────────────────────────────────
+  - id: "OPS-001"
+    title: "보안 패치 정기 적용 정책"
+    category: "운영보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.13.1"
+    module: "interactive.py"
+    severity: "medium"
+    automated: false
+
+  - id: "OPS-002"
+    title: "초기화(공장초기화) 기능 지원"
+    category: "운영보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.13.2"
+    module: "interactive.py"
+    severity: "low"
+    automated: false
+
+  - id: "OPS-003"
+    title: "보안 설정 내보내기/가져오기"
+    category: "운영보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.13.3"
+    module: "interactive.py"
+    severity: "low"
+    automated: false
+
+  - id: "OPS-004"
+    title: "이상 행동 탐지 및 알람"
+    category: "운영보안"
+    method: "checklist"
+    reference: "NIS 영상보안 2.13.4"
+    module: "interactive.py"
+    severity: "high"
+    automated: false
+
+# 심각도 등급 기준
+severity_levels:
+  critical: "즉시 조치 필요 - 보안 인증 불합격 처리"
+  high: "우선 조치 필요 - 핵심 보안 요구사항"
+  medium: "조치 권장 - 보안 강화 요구사항"
+  low: "참고 사항 - 선택적 보안 강화 항목"
+
+# 검사 방법별 분류
+method_summary:
+  blackbox:
+    description: "네트워크를 통한 외부 자동 검사"
+    items:
+      - AUTH-001
+      - AUTH-003
+      - AUTH-004
+      - AUTH-005
+      - AUTH-007
+      - AUTH-008
+      - AC-001
+      - AC-002
+      - AC-003
+      - AC-004
+      - AC-005
+      - AC-006
+      - CRYPT-001
+      - CRYPT-002
+      - CRYPT-003
+      - SSH-001
+      - NET-001
+      - NET-002
+  graybox:
+    description: "파일시스템 및 바이너리 직접 분석"
+    items:
+      - CRYPT-004
+      - CRYPT-005
+      - CRYPT-006
+      - CRYPT-007
+      - CRYPT-008
+      - VIDEO-001
+      - LOG-001
+      - LOG-002
+      - LOG-003
+      - FS-001
+      - FS-002
+      - MEM-001
+      - SW-001
+      - SW-003
+  checklist:
+    description: "검사자 수동 확인 항목"
+    items:
+      - AUTH-002
+      - AUTH-006
+      - VIDEO-002
+      - VIDEO-003
+      - VIDEO-004
+      - SSH-002
+      - SSH-003
+      - LOG-004
+      - LOG-005
+      - FS-003
+      - MEM-002
+      - SW-002
+      - SW-004
+      - NET-003
+      - PRIV-001
+      - PRIV-002
+      - PRIV-003
+      - PHY-001
+      - PHY-002
+      - OPS-001
+      - OPS-002
+      - OPS-003
+      - OPS-004
