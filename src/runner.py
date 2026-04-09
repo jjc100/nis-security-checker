@@ -1,6 +1,7 @@
 """
 검사 실행기 모듈
 YAML 설정을 로드하고, 선택된 엔진을 실행하여 결과를 수집한 후 리포트를 생성합니다.
+설정에 따라 blackbox/graybox 엔진을 자동으로 선택합니다.
 """
 
 import logging
@@ -11,6 +12,18 @@ import yaml
 
 from src.models import TestResult, TestStatus
 from src.utils.logger import setup_logger
+
+
+def _has_host(config: dict) -> bool:
+    """설정에 host 정보가 있는지 확인합니다."""
+    host = config.get("target", {}).get("host", "")
+    return bool(host)
+
+
+def _has_project_path(config: dict) -> bool:
+    """설정에 project_path 또는 source_paths가 있는지 확인합니다."""
+    target = config.get("target", {})
+    return bool(target.get("project_path") or target.get("source_paths"))
 
 
 class Runner:
@@ -45,6 +58,42 @@ class Runner:
         with open(self.checklist_path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
         return data.get("items", [])
+
+    def _validate_config(self, config: dict) -> Optional[str]:
+        """
+        실행 모드에 따라 필수 설정값을 검증합니다.
+
+        Returns:
+            오류 메시지 문자열 (문제가 없으면 None)
+        """
+        if self.mode == "blackbox" and not _has_host(config):
+            return (
+                "블랙박스(blackbox) 모드를 실행하려면 config의 target.host가 필요합니다. "
+                "설정 파일에 host를 추가하거나 --mode graybox를 사용하세요."
+            )
+        if self.mode == "graybox" and not _has_project_path(config):
+            self.logger.warning(
+                "그레이박스 검사에 project_path 또는 source_paths가 설정되지 않았습니다. "
+                "Linux 고정 경로로 폴백합니다."
+            )
+        return None
+
+    def _should_run_blackbox(self, config: dict) -> bool:
+        """blackbox 엔진을 실행할지 결정합니다."""
+        if self.mode == "blackbox":
+            return True
+        if self.mode == "all":
+            return _has_host(config)
+        return False
+
+    def _should_run_graybox(self, config: dict) -> bool:
+        """graybox 엔진을 실행할지 결정합니다."""
+        if self.mode == "graybox":
+            return True
+        if self.mode == "all":
+            # host가 있든 없든 graybox는 실행 (project_path 있으면 더 상세)
+            return True
+        return False
 
     def _run_blackbox(self, config: dict) -> list[TestResult]:
         """블랙박스 검사 엔진들을 실행합니다."""
@@ -196,16 +245,30 @@ class Runner:
         try:
             config = self._load_config()
             items = self._load_checklist()
-        except Exception as e:
-            self.logger.error("설정 로드 실패: %s", e)
+        except OSError as e:
+            self.logger.error("설정 파일 로드 실패: %s", e)
+            return 1
+        except yaml.YAMLError as e:
+            self.logger.error("YAML 파싱 오류: %s", e)
+            return 1
+
+        # 설정 검증
+        error_msg = self._validate_config(config)
+        if error_msg:
+            self.logger.error("설정 오류: %s", error_msg)
             return 1
 
         all_results: list[TestResult] = []
 
-        if self.mode in ("blackbox", "all"):
-            all_results.extend(self._run_blackbox(config))
+        if self._should_run_blackbox(config):
+            if not _has_host(config):
+                self.logger.warning(
+                    "mode=all이지만 target.host가 없으므로 블랙박스 검사를 건너뜁니다."
+                )
+            else:
+                all_results.extend(self._run_blackbox(config))
 
-        if self.mode in ("graybox", "all"):
+        if self._should_run_graybox(config):
             all_results.extend(self._run_graybox(config))
 
         if self.mode in ("checklist", "all"):

@@ -1,0 +1,68 @@
+# NVR4 Windows 프로젝트 대상 검사 설정
+# 사용 예시:
+#   python -m src.main --config config/target_config_nvr4.yaml --mode graybox
+
+target:
+  # 네트워크 대상 (blackbox 검사용) - NVR4 실 장비가 있을 때 설정
+  # host: "192.168.1.100"
+  # ports:
+  #   https: 443
+  #   rtsp: 554
+  #   http: 80
+  #   ssh: 22
+
+  # Windows 프로젝트 대상 (graybox 검사용)
+  project_path: "D:\\Develop2\\NVR4"
+  solution_path: "D:\\Develop2\\NVR4\\NVR4.sln"       # 선택: .sln 파일 경로
+  build_output_path: "D:\\Develop2\\NVR4\\bin"         # 선택: 빌드 산출물 디렉터리
+  source_paths:                                         # 선택: 특정 소스 경로만 지정 시
+    - "D:\\Develop2\\NVR4\\src"
+    - "D:\\Develop2\\NVR4\\lib"
+  scan_build_outputs: true                              # bin/obj 산출물 포함 여부
+
+# 계정 정보 (blackbox 검사 시 필요)
+credentials:
+  admin:
+    username: admin
+    password: "Admin@1234"
+
+# 기능 플래그 (체크리스트 검사용)
+features:
+  has_audio: true
+  has_2fa: false
+  has_rtsp: true
+  has_onvif: true
+  has_ssh: false
+  has_web_interface: true
+  has_rest_api: true
+
+# 타임아웃 설정 (초)
+timeouts:
+  connect: 10
+  session: 600
+  login_lockout: 300
+
+# 최대 로그인 실패 횟수
+max_login_attempts: 5
+
+# CVE 조회 설정
+nvd:
+  api_key: ""               # NVD API 키 (선택 사항)
+  product_name: "nvr4"
+  vendor: ""
+
+# 기본 계정 목록 (blackbox 취약 여부 확인용)
+default_credentials:
+  - username: admin
+    password: admin
+  - username: admin
+    password: "123456"
+  - username: root
+    password: root
+
+# 무결성 검사 기준 해시 (파일경로: SHA-256)
+# 빌드 산출물의 기준 해시를 등록하면 무결성 검증에 사용됩니다.
+# integrity_baseline:
+#   "D:\\Develop2\\NVR4\\bin\\NVR4.exe": ""
+#   "D:\\Develop2\\NVR4\\bin\\NVR4.dll": ""
+integrity_baseline: {}
