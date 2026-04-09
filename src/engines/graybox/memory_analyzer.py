@@ -225,6 +225,22 @@ class MemoryAnalyzer:
                 timestamp=datetime.now(),
             )
 
+        # 프로젝트 모드(Windows/NVR4)에서 소스 파일이 없으면 SKIP 반환.
+        # Linux 런타임 메모리 분석 경로(os.geteuid, /proc, ps 등)로 내려가지 않는다.
+        if self._project_roots:
+            return TestResult(
+                id="MEM-001",
+                name="메모리 내 평문 인증정보 미존재",
+                category="메모리보안",
+                status=TestStatus.SKIP,
+                engine=self.engine,
+                details=(
+                    "분석할 소스 파일을 찾을 수 없습니다. "
+                    "config의 project_path 또는 source_paths를 확인하세요."
+                ),
+                timestamp=datetime.now(),
+            )
+
         # Linux 모드: root 권한 확인
         if os.geteuid() != 0:
             return TestResult(
