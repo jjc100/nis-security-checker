@@ -74,7 +74,8 @@ class Runner:
         if self.mode == "graybox" and not _has_project_path(config):
             self.logger.warning(
                 "그레이박스 검사에 project_path 또는 source_paths가 설정되지 않았습니다. "
-                "Linux 고정 경로로 폴백합니다."
+                "소스 코드 분석은 건너뛰며, Linux 런타임 환경에서만 제한적으로 동작합니다. "
+                "Windows 프로젝트를 검사하려면 config의 target.project_path를 설정하세요."
             )
         return None
 

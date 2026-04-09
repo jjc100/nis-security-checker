@@ -11,6 +11,7 @@ from pathlib import Path
 import requests
 
 from src.models import TestResult, TestStatus
+from src.utils.path_validator import is_within_root, DEFAULT_EXCLUDE_DIRS, DEFAULT_MAX_DEPTH
 
 # NVD API 엔드포인트
 NVD_API_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
@@ -28,7 +29,7 @@ NUGET_FILE_PATTERNS = [
 ]
 
 # 제외 디렉터리
-EXCLUDED_DIRS = {".git", "node_modules", ".vs", ".idea"}
+EXCLUDED_DIRS = DEFAULT_EXCLUDE_DIRS
 
 
 def _is_excluded(path: Path) -> bool:
@@ -169,6 +170,7 @@ class CVEScanner:
         for root in self._project_roots:
             if not root.exists():
                 continue
+            resolved_root = root.resolve()
             for fpath in root.rglob("*"):
                 if _is_excluded(fpath):
                     continue
@@ -178,7 +180,17 @@ class CVEScanner:
                 ext = fpath.suffix.lower()
                 # packages.config, *.csproj, *.vcxproj, Directory.Build.props 등
                 if name == "packages.config" or ext in {".csproj", ".vcxproj", ".props"}:
+                    # 스캔 깊이 제한
+                    try:
+                        depth = len(fpath.relative_to(root).parts)
+                        if depth > DEFAULT_MAX_DEPTH:
+                            continue
+                    except ValueError:
+                        continue
                     resolved = fpath.resolve()
+                    # 루트 바깥 경로(심볼릭 링크 우회 등) 방지
+                    if not is_within_root(resolved, resolved_root):
+                        continue
                     if resolved not in seen:
                         seen.add(resolved)
                         files.append(fpath)

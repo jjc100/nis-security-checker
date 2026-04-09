@@ -12,12 +12,13 @@ target:
   #   ssh: 22
 
   # Windows 프로젝트 대상 (graybox 검사용)
-  project_path: "D:\\Develop2\\NVR4"
-  solution_path: "D:\\Develop2\\NVR4\\NVR4.sln"       # 선택: .sln 파일 경로
-  build_output_path: "D:\\Develop2\\NVR4\\bin"         # 선택: 빌드 산출물 디렉터리
-  source_paths:                                         # 선택: 특정 소스 경로만 지정 시
-    - "D:\\Develop2\\NVR4\\src"
-    - "D:\\Develop2\\NVR4\\lib"
+  # 아래 경로를 실제 프로젝트 위치로 변경하세요.
+  project_path: "D:\\path\\to\\your\\project"
+  solution_path: "D:\\path\\to\\your\\project\\YourProject.sln"       # 선택: .sln 파일 경로
+  build_output_path: "D:\\path\\to\\your\\project\\bin"               # 선택: 빌드 산출물 디렉터리
+  source_paths:                                                         # 선택: 특정 소스 경로만 지정 시
+    - "D:\\path\\to\\your\\project\\src"
+    - "D:\\path\\to\\your\\project\\lib"
   scan_build_outputs: true                              # bin/obj 산출물 포함 여부
 
 # 계정 정보 (blackbox 검사 시 필요)
@@ -48,7 +49,7 @@ max_login_attempts: 5
 # CVE 조회 설정
 nvd:
   api_key: ""               # NVD API 키 (선택 사항)
-  product_name: "nvr4"
+  product_name: "your_product"
   vendor: ""
 
 # 기본 계정 목록 (blackbox 취약 여부 확인용)
@@ -63,6 +64,6 @@ default_credentials:
 # 무결성 검사 기준 해시 (파일경로: SHA-256)
 # 빌드 산출물의 기준 해시를 등록하면 무결성 검증에 사용됩니다.
 # integrity_baseline:
-#   "D:\\Develop2\\NVR4\\bin\\NVR4.exe": ""
-#   "D:\\Develop2\\NVR4\\bin\\NVR4.dll": ""
+#   "D:\\path\\to\\your\\project\\bin\\YourProject.exe": ""
+#   "D:\\path\\to\\your\\project\\bin\\YourProject.dll": ""
 integrity_baseline: {}

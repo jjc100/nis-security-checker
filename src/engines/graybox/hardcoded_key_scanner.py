@@ -11,6 +11,7 @@ from pathlib import Path
 
 from src.models import TestResult, TestStatus
 from src.utils.crypto import calculate_entropy
+from src.utils.path_validator import is_within_root, DEFAULT_EXCLUDE_DIRS, DEFAULT_MAX_DEPTH
 
 # 하드코딩 키 패턴 (PEM 헤더, API 키, 시크릿 등)
 KEY_PATTERNS = [
@@ -36,7 +37,7 @@ CONFIG_EXTENSIONS = {".config", ".xml", ".json", ".ini", ".yaml", ".yml"}
 BINARY_EXTENSIONS = {".dll", ".exe", ".lib", ".obj"}
 
 # 제외 디렉터리
-EXCLUDED_DIRS = {".git", "node_modules", ".vs", ".idea"}
+EXCLUDED_DIRS = DEFAULT_EXCLUDE_DIRS
 
 # Linux 폴백 디렉터리
 LINUX_SCAN_DIRS = ["/opt", "/usr/local/bin", "/usr/local/lib"]
@@ -133,6 +134,7 @@ class HardcodedKeyScanner:
         for root in self._project_roots:
             if not root.exists():
                 continue
+            resolved_root = root.resolve()
             for fpath in root.rglob("*"):
                 if _is_excluded(fpath):
                     continue
@@ -140,7 +142,17 @@ class HardcodedKeyScanner:
                     continue
                 if fpath.suffix.lower() not in all_exts:
                     continue
+                # 스캔 깊이 제한
+                try:
+                    depth = len(fpath.relative_to(root).parts)
+                    if depth > DEFAULT_MAX_DEPTH:
+                        continue
+                except ValueError:
+                    continue
                 resolved = fpath.resolve()
+                # 루트 바깥 경로(심볼릭 링크 우회 등) 방지
+                if not is_within_root(resolved, resolved_root):
+                    continue
                 if resolved in seen:
                     continue
                 seen.add(resolved)
@@ -157,6 +169,7 @@ class HardcodedKeyScanner:
         for root in self._project_roots:
             if not root.exists():
                 continue
+            resolved_root = root.resolve()
             for fpath in root.rglob("*"):
                 if _is_excluded(fpath):
                     continue
@@ -164,7 +177,17 @@ class HardcodedKeyScanner:
                     continue
                 if fpath.suffix.lower() not in BINARY_EXTENSIONS:
                     continue
+                # 스캔 깊이 제한
+                try:
+                    depth = len(fpath.relative_to(root).parts)
+                    if depth > DEFAULT_MAX_DEPTH:
+                        continue
+                except ValueError:
+                    continue
                 resolved = fpath.resolve()
+                # 루트 바깥 경로(심볼릭 링크 우회 등) 방지
+                if not is_within_root(resolved, resolved_root):
+                    continue
                 if resolved in seen:
                     continue
                 seen.add(resolved)

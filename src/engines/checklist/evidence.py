@@ -8,13 +8,14 @@ from datetime import datetime
 from pathlib import Path
 
 from src.utils.crypto import sha256_file
+from src.utils.path_validator import sanitize_filename, validate_file, is_within_root
 
 
 class EvidenceManager:
     """증빙 파일 관리자"""
 
     def __init__(self, evidence_dir: str = "output/evidence") -> None:
-        self.evidence_dir = Path(evidence_dir)
+        self.evidence_dir = Path(evidence_dir).resolve()
         self.evidence_dir.mkdir(parents=True, exist_ok=True)
         self.registry: dict[str, dict] = {}  # item_id → 증빙 정보
 
@@ -23,20 +24,35 @@ class EvidenceManager:
         증빙 파일을 저장하고 SHA-256 해시를 기록합니다.
 
         Args:
-            item_id: 체크리스트 항목 ID
+            item_id: 체크리스트 항목 ID (영숫자/하이픈/언더스코어만 허용)
             source_path: 원본 파일 경로
 
         Returns:
             저장된 파일 경로
-        """
-        src = Path(source_path)
-        if not src.exists():
-            raise FileNotFoundError(f"파일을 찾을 수 없습니다: {source_path}")
 
-        # 파일명: {item_id}_{타임스탬프}_{원본파일명}
+        Raises:
+            ValueError: item_id 또는 source_path가 유효하지 않은 경우
+            FileNotFoundError: source_path 파일이 존재하지 않는 경우
+        """
+        # item_id 안전화 (파일명으로 사용하기 전 검증)
+        safe_item_id = sanitize_filename(item_id)
+
+        # source_path 검증: 빈값/존재/파일 여부 확인
+        src = validate_file(source_path, "증빙 파일")
+
+        # 원본 파일명도 안전화
+        safe_src_name = sanitize_filename(src.name)
+
+        # 파일명: {safe_item_id}_{타임스탬프}_{안전화된_원본파일명}
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        dest_name = f"{item_id}_{timestamp}_{src.name}"
+        dest_name = f"{safe_item_id}_{timestamp}_{safe_src_name}"
         dest = self.evidence_dir / dest_name
+
+        # 경로 traversal 방지: 목적지가 evidence_dir 내부인지 확인
+        if not is_within_root(dest, self.evidence_dir):
+            raise ValueError(
+                f"증빙 파일 저장 경로가 허용된 디렉터리 밖에 있습니다: {dest}"
+            )
 
         shutil.copy2(src, dest)
         file_hash = sha256_file(dest)
